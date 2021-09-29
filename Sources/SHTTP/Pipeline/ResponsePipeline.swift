@@ -21,7 +21,7 @@ final class ResponsePipeline: ChannelOutboundHandler, RemovableChannelHandler {
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
         let message = unwrapOutboundIn(data)
         
-        print(debugDate, message.request.head.method.rawValue, message.request.head.uri, message.response.head.status.code, getpid())
+        print("[\(debugDate)] [\(message.request.head.method.rawValue)] [\(message.response.head.status.code)] \"\(message.request.head.uri)\"")
         context.write(wrapOutboundOut(.head(message.response.head)), promise: promise)
         switch message.response.body.storage {
         case .empty:

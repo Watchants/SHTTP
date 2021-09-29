@@ -7,27 +7,32 @@
 
 import NIO
 import NIOHTTP1
+import Foundation
 
 public struct Message {
+    
     public let request: MessageRequest
     public let response: MessageResponse
 }
 
 public struct MessageUri {
+    
     public let path: String
     public let query: String
+    public let queryItems: [String: [String]]
     
     init(head: HTTPRequestHead) {
-        let uri: [Character] = [Character](head.uri)
-        var path: [Character] = []
-        var query: [Character] = uri
-        for item in uri {
-            query.removeFirst()
-            guard item != "?" else { break }
-            path.append(item)
+        var queryItems: [String: [String]] = [:]
+        let urlComponents = URLComponents(string: head.uri)
+        for item in urlComponents?.queryItems ?? []  {
+            let items = queryItems[item.name] ?? []
+            if let value = item.value {
+                queryItems[item.name] = items + [value]
+            }
         }
-        self.path = String(path)
-        self.query = String(query)
+        self.path = urlComponents?.path ?? "/"
+        self.query = urlComponents?.query ?? ""
+        self.queryItems = queryItems
     }
 }
 

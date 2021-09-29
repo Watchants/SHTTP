@@ -215,6 +215,6 @@ extension URLSCodable {
     }
 
     internal static func SubpathsHashValue(subpaths: [String.SubSequence]) -> Int {
-        return subpaths.joined(separator: "/").hash
+        return subpaths.joined(separator: "/").lowercased().hash
     }
 }
