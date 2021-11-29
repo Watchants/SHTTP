@@ -1,5 +1,5 @@
 //
-//  ResponsePipeline.swift
+//  PipelineResponseHandler.swift
 //  snake-http
 //
 //  Created by panghu on 7/10/20.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class ResponsePipeline: ChannelOutboundHandler, RemovableChannelHandler {
+final class PipelineResponseHandler: ChannelOutboundHandler, RemovableChannelHandler {
     
     typealias OutboundIn = Message
     typealias OutboundOut = HTTPServerResponsePart
@@ -87,7 +87,7 @@ final class ResponsePipeline: ChannelOutboundHandler, RemovableChannelHandler {
     }
 }
 
-extension ResponsePipeline {
+extension PipelineResponseHandler {
  
     private static let debugDateFormatter = { () -> DateFormatter in
         let dateFormatter = DateFormatter()
@@ -102,7 +102,7 @@ extension ResponsePipeline {
     }
     
     private var debugDate: String {
-        return ResponsePipeline.debugDate
+        return PipelineResponseHandler.debugDate
     }
 
 }

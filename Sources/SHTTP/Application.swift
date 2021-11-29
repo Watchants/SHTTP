@@ -52,8 +52,8 @@ public final class Application {
             .childChannelInitializer { channel -> EventLoopFuture<Void> in
                 channel.pipeline.configureHTTPServerPipeline(withErrorHandling: true).flatMap {
                     channel.pipeline.addHandlers([
-                        RequestPipeline(application: self),
-                        ResponsePipeline(application: self),
+                        PipelineRequestHandler(application: self),
+                        PipelineResponseHandler(application: self),
                         HandlePipeline(application: self),
                     ])
                 }

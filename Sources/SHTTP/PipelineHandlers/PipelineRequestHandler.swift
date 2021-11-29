@@ -1,11 +1,11 @@
 //
-//  RequestPipeline.swift
+//  PipelineRequestHandler.swift
 //  snake-http
 //
 //  Created by panghu on 7/10/20.
 //
 
-final class RequestPipeline: ChannelInboundHandler, RemovableChannelHandler {
+final class PipelineRequestHandler: ChannelInboundHandler, RemovableChannelHandler {
     
     typealias InboundIn = HTTPServerRequestPart
     typealias InboundOut = MessageRequest
