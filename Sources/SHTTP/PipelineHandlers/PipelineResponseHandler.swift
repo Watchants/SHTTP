@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import NIOCore
+import NIOHTTP1
 
 final class PipelineResponseHandler: ChannelOutboundHandler, RemovableChannelHandler {
     
@@ -20,70 +22,83 @@ final class PipelineResponseHandler: ChannelOutboundHandler, RemovableChannelHan
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
         let message = unwrapOutboundIn(data)
+        let response = message.response
+        let head = response.head
         
-        print("[\(debugDate)] [\(message.request.head.method.rawValue)] [\(message.response.head.status.code)] \"\(message.request.head.uri)\"")
-        context.write(wrapOutboundOut(.head(message.response.head)), promise: promise)
-        switch message.response.body.storage {
-        case .empty:
-            write(context: context, response: message.response, promise: promise)
-        case .buffer(let buffer):
-            write(context: context, response: message.response, buffer: buffer, promise: promise)
-        case .data(let data):
-            write(context: context, response: message.response, data: data, promise: promise)
-        case .string(let string):
-            write(context: context, response: message.response, string: string, promise: promise)
-        case .json(let json):
-            write(context: context, response: message.response, json: json, promise: promise)
-        case .stream(let stream):
-            write(context: context, response: message.response, stream: stream, promise: promise)
+        context.write(wrapOutboundOut(.head(message.response.head)), promise: nil)
+        write(context: context, head: head, body: message.response.body, response: response).whenComplete { [self] _ in
+            context.writeAndFlush(wrapOutboundOut(.end(nil))).whenComplete { result in
+                promise?.completeWith(result)
+                context.close(promise: nil)
+            }
         }
-        context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: promise)
+        puts(code: head.status.code, method: message.request.head.method.rawValue, uri: message.request.head.uri, from: context.remoteAddress)
     }
     
-    private func write(context: ChannelHandlerContext, response: MessageResponse, promise: EventLoopPromise<Void>?) {
-        
+    private func write(context: ChannelHandlerContext, head: HTTPResponseHead, body: MessageBody, response: MessageResponse) -> EventLoopFuture<Void> {
+        switch body.storage {
+        case .empty:
+            return write(context: context)
+        case .buffer(let buffer):
+            return write(context: context, buffer: buffer)
+        case .data(let data):
+            return write(context: context, data: data)
+        case .string(let string):
+            return write(context: context, string: string)
+        case .json(let json):
+            return write(context: context, json: json)
+        case .stream(let stream):
+            return write(context: context, stream: stream)
+        }
     }
     
-    private func write(context: ChannelHandlerContext, response: MessageResponse, buffer: ByteBuffer, promise: EventLoopPromise<Void>?) {
-        context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: promise)
+    private func write(context: ChannelHandlerContext) -> EventLoopFuture<Void> {
+        return context.eventLoop.makeSucceededFuture(())
     }
     
-    private func write(context: ChannelHandlerContext, response: MessageResponse, data: Data, promise: EventLoopPromise<Void>?) {
+    private func write(context: ChannelHandlerContext, buffer: ByteBuffer) -> EventLoopFuture<Void> {
+        return context.writeAndFlush(wrapOutboundOut(.body(.byteBuffer(buffer))))
+    }
+    
+    private func write(context: ChannelHandlerContext, data: Data) -> EventLoopFuture<Void> {
         var buffer = context.channel.allocator.buffer(capacity: data.count)
         buffer.writeBytes(data)
-        context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: promise)
+        return context.writeAndFlush(wrapOutboundOut(.body(.byteBuffer(buffer))))
     }
     
-    private func write(context: ChannelHandlerContext, response: MessageResponse, string: String, promise: EventLoopPromise<Void>?) {
+    private func write(context: ChannelHandlerContext, string: String) -> EventLoopFuture<Void> {
         var buffer = context.channel.allocator.buffer(capacity: string.count)
         buffer.writeString(string)
-        context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: promise)
+        return context.writeAndFlush(wrapOutboundOut(.body(.byteBuffer(buffer))))
     }
     
-    private func write(context: ChannelHandlerContext, response: MessageResponse, json: Any, promise: EventLoopPromise<Void>?) {
+    private func write(context: ChannelHandlerContext, json: Any) -> EventLoopFuture<Void> {
         do {
             let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
             var buffer = context.channel.allocator.buffer(capacity: data.count)
             buffer.writeBytes(data)
-            context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: promise)
-            promise?.succeed(())
+            return context.writeAndFlush(wrapOutboundOut(.body(.byteBuffer(buffer))))
         } catch {
-            promise?.fail(error)
+            return context.eventLoop.makeFailedFuture(error)
         }
     }
     
-    private func write(context: ChannelHandlerContext, response: MessageResponse, stream: MessageByteStream, promise: EventLoopPromise<Void>?) {
+    private func write(context: ChannelHandlerContext, stream: MessageByteStream) -> EventLoopFuture<Void> {
         let wrapOutOut = wrapOutboundOut
+        let promise: EventLoopPromise<Void> = context.eventLoop.makePromise()
         stream.read { _, element in
             switch element {
             case .bytes(let buffer):
-                context.write(wrapOutOut(.body(.byteBuffer(buffer))), promise: promise)
+                _ = context.writeAndFlush(wrapOutOut(.body(.byteBuffer(buffer))))
             case .error(let error):
-                promise?.fail(error)
+                context.flush()
+                promise.fail(error)
             case .end(_):
-                break
+                context.flush()
+                promise.succeed(())
             }
         }
+        return promise.futureResult
     }
 }
 
@@ -105,4 +120,9 @@ extension PipelineResponseHandler {
         return PipelineResponseHandler.debugDate
     }
 
+    private func puts(code: UInt, method: String, uri: String, from: SocketAddress?) {
+        let ip = from?.ipAddress ?? "-"
+        let port = from?.port ?? 0
+        print("[\(ip):\(port)] [\(debugDate)] [\(method)] [\(code)] \(uri)")
+    }
 }

@@ -24,9 +24,6 @@ final class HandlePipeline: ChannelInboundHandler {
             switch result {
             case .success(let response):
                 context.write(wrapOutOut(Message(request: request, response: response)), promise: nil)
-                if !response.head.isKeepAlive {
-                    context.close(promise: nil)
-                }
             case .failure(_):
                 context.close(promise: nil)
             }
