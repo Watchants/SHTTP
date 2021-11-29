@@ -18,7 +18,16 @@ internal let UploadUrls = URLS(
     ]) { request, channel in
     
     let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-    let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .notFound), body: MessageBody(string: messageBody404HTML))
+    let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .notFound), body: MessageBody(string: """
+<!DOCTYPE html>
+<html lang=en>
+<meta charset=utf-8>
+<title>Error 404 (Not Found)!!</title>
+<p><b>404.</b> <ins>That’s an error.</ins>
+<p>The requested URL <code>/404</code> was not found on this server.
+</html>
+"""
+))
     promise.succeed(response)
     return promise.futureResult
 }
