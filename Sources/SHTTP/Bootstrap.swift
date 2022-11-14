@@ -1,25 +1,26 @@
 //
-//  Application.swift
+//  Bootstrap.swift
 //  snake-http
 //
-//  Created by panghu on 7/5/20.
+//  Created by Tiger on 11/14/22.
 //
 
 import NIO
 import NIOHTTP2
 
-public final class Application {
+public final class Bootstrap {
     
     public let configuration: Configuration
     public let eventLoopGroup: EventLoopGroup
-    public let urlPatterns: URLpatterns
     
     private var channel: Channel?
     
-    public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup, urls: URLS) {
+    internal let reponse: BaseApplication.Reponse
+    
+    public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
-        self.urlPatterns = URLpatterns(urls: urls)
+        self.reponse = .init()
     }
     
     deinit { try? eventLoopGroup.syncShutdownGracefully() }
@@ -52,9 +53,9 @@ public final class Application {
             .childChannelInitializer { channel -> EventLoopFuture<Void> in
                 channel.pipeline.configureHTTPServerPipeline(withErrorHandling: true).flatMap {
                     channel.pipeline.addHandlers([
-                        PipelineRequestHandler(application: self),
-                        PipelineResponseHandler(application: self),
-                        HandlePipeline(application: self),
+                        PipelineRequestHandler(bootstrap: self),
+                        PipelineResponseHandler(bootstrap: self),
+                        HandlePipeline(bootstrap: self),
                     ])
                 }
             }
@@ -71,8 +72,7 @@ public final class Application {
     }
 }
 
-/// Configuration
-extension Application {
+extension Bootstrap {
     
     public struct Configuration {
         
@@ -103,7 +103,7 @@ extension Application {
     }
 }
 
-extension Application {
+extension Bootstrap {
     
     public func printAddress() {
         
@@ -131,3 +131,4 @@ extension Application {
         print("Server started and listening on [\(`protocol`)] http://\(host), logger path \(configuration.logger)")
     }
 }
+

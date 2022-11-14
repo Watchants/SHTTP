@@ -18,11 +18,12 @@ final class PipelineRequestHandler: ChannelInboundHandler, RemovableChannelHandl
     }
 
     var state: State
-    let application: Application
     
-    init(application: Application) {
+    let bootstrap: Bootstrap
+    
+    init(bootstrap: Bootstrap) {
         self.state = .ready
-        self.application = application
+        self.bootstrap = bootstrap
     }
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {

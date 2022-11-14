@@ -10,16 +10,16 @@ final class HandlePipeline: ChannelInboundHandler {
     typealias InboundIn = MessageRequest
     typealias OutboundOut = Message
     
-    let application: Application
+    let bootstrap: Bootstrap
     
-    init(application: Application) {
-        self.application = application
+    init(bootstrap: Bootstrap) {
+        self.bootstrap = bootstrap
     }
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let wrapOutOut = wrapOutboundOut
         let request = unwrapInboundIn(data)
-        let respond = application.urlPatterns.respond(path: request.uri.path)
+        let respond = bootstrap.urlPatterns.respond(path: request.uri.path)
         respond(request, context.channel).whenComplete { result in
             switch result {
             case .success(let response):

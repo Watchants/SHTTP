@@ -14,10 +14,10 @@ final class PipelineResponseHandler: ChannelOutboundHandler, RemovableChannelHan
     typealias OutboundIn = Message
     typealias OutboundOut = HTTPServerResponsePart
     
-    let application: Application
+    let bootstrap: Bootstrap
     
-    init(application: Application) {
-        self.application = application
+    init(bootstrap: Bootstrap) {
+        self.bootstrap = bootstrap
     }
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {

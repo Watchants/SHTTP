@@ -90,14 +90,11 @@ let urls = URLS(
     return promise.futureResult
 }
 
-let app = Application(
+let bootstrap = Bootstrap(
     configuration: .init(host: "127.0.0.1", port: 8889),
-    eventLoopGroup: .init(numberOfThreads: System.coreCount),
-    urls: urls
+    eventLoopGroup: .init(numberOfThreads: System.coreCount)
 )
 
-try app.start().wait()
-
-app.printAddress()
-
-try app.onClose.wait()
+try bootstrap.start().wait()
+bootstrap.printAddress()
+try bootstrap.onClose.wait()
