@@ -1,13 +1,17 @@
 //
-//  BaseApplication.swift
+//  BaseController.swift
 //  snake-http
 //
 //  Created by Tiger on 11/14/22.
 //
 
+import NIO
+import NIOHTTP1
 import Foundation
 
-open class BaseApplication {
+open class BaseController {
+    
+    public class var request: String { "/" }
     
     public required init() {
         
@@ -15,30 +19,47 @@ open class BaseApplication {
     
     open func respond(from request: MessageRequest, on channel: Channel) -> EventLoopFuture<MessageResponse> {
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: {}))
+        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     }
-    
 }
 
-extension BaseApplication {
+class UserController: BaseController {
     
-    internal class Reponse {
-        
-        let apps = Reponse.applications()
-        
-        
+    override class var request: String {
+        return ""
     }
 }
 
-extension BaseApplication.Reponse {
+extension BaseController {
     
-    static func applications() -> [BaseApplication.Type] {
-        func class_isApplication(_ `class`: AnyClass?) -> Bool {
+    internal class Responser {
+        
+        func controller(message: MessageRequest) -> BaseController {
+            let controllers = BaseController.Responser.controllers.map {
+                let children = Mirror(reflecting: $0.init()).children
+                children.forEach { child in
+                    print(child.label)
+                    print(child.value)
+                }
+            }
+            
+//            print(controllers)
+            return BaseController()
+        }
+    }
+}
+
+extension BaseController.Responser {
+    
+    static let controllers: [BaseController.Type] = allControllers()
+    
+    private static func allControllers() -> [BaseController.Type] {
+        func class_isController(_ `class`: AnyClass?) -> Bool {
             var `class`: AnyClass? = `class`
             while let any = class_getSuperclass(`class`) {
-                if BaseApplication.self === `class` {
+                if BaseController.self === `class` {
                     return true
                 }
                 `class` = any
@@ -51,11 +72,11 @@ extension BaseApplication.Reponse {
         }
         defer { free(UnsafeMutableRawPointer(pointer)) }
         let classes = UnsafeBufferPointer(start: pointer, count: Int(count))
-        return classes.map { `class` -> BaseApplication.Type? in
-            guard class_isApplication(`class`) else {
+        return classes.map { `class` -> BaseController.Type? in
+            guard class_isController(`class`) else {
                 return nil
             }
-            guard let application = `class` as? BaseApplication.Type else {
+            guard let application = `class` as? BaseController.Type else {
                 return nil
             }
             return application

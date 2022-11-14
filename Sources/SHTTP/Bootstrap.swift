@@ -10,17 +10,17 @@ import NIOHTTP2
 
 public final class Bootstrap {
     
+    private var channel: Channel?
+    
     public let configuration: Configuration
     public let eventLoopGroup: EventLoopGroup
     
-    private var channel: Channel?
-    
-    internal let reponse: BaseApplication.Reponse
+    internal let responser: BaseController.Responser
     
     public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
-        self.reponse = .init()
+        self.responser = .init()
     }
     
     deinit { try? eventLoopGroup.syncShutdownGracefully() }
