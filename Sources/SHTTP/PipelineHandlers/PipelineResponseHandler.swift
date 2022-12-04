@@ -124,8 +124,6 @@ extension PipelineResponseHandler {
         
         if let ip = message.request.head.headers.first(name: "X-Real-IP") {
             print("\(date) [x-real-ip:\(ip)] [\(method)] [\(code)] \(path)")
-        } else if let referer = message.request.head.headers.first(name: "Referer") {
-            print("\(date) [referer:\(referer)] [\(method)] [\(code)] \(path)")
         } else {
             print("\(date) [ip:\(from?.ipAddress ?? "-")] [\(method)] [\(code)] \(path)")
         }
