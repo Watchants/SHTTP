@@ -17,12 +17,13 @@ final class HandlePipeline: ChannelInboundHandler {
     }
     
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        let wrapOutOut = wrapOutboundOut
+        let wrap = wrapOutboundOut
         let request = unwrapInboundIn(data)
-        bootstrap.responser.controller(message: request).respond(from: request, on: context.channel).whenComplete { result in
+        let handler = bootstrap.mapping.lookupHandlerMethod(request: request)
+        handler(request, context.channel).whenComplete { result in
             switch result {
             case .success(let response):
-                context.write(wrapOutOut(Message(request: request, response: response)), promise: nil)
+                context.write(wrap(Message(request: request, response: response)), promise: nil)
             case .failure(_):
                 context.close(promise: nil)
             }

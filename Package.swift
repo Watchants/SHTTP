@@ -35,7 +35,7 @@ let package = Package(
         ),
 
         // executable
-        .target(
+        .executableTarget(
             name: "SHTTPD",
             dependencies: ["SHTTP"]
         ),

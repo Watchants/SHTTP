@@ -15,12 +15,12 @@ public final class Bootstrap {
     public let configuration: Configuration
     public let eventLoopGroup: EventLoopGroup
     
-    internal let responser: BaseController.Responser
+    internal let mapping: HandlerMapping
     
     public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
-        self.responser = .init()
+        self.mapping = .init()
     }
     
     deinit { try? eventLoopGroup.syncShutdownGracefully() }
