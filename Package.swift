@@ -16,13 +16,12 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.44.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.45.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.23.0"),
         .package(url: "https://github.com/apple/swift-nio-http2.git", from: "1.23.1"),
     ],
     targets: [
         
-        // library
         .target(
             name: "SHTTP",
             dependencies: [
@@ -33,11 +32,18 @@ let package = Package(
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
             ]
         ),
-
-        // executable
+        
         .executableTarget(
             name: "SHTTPD",
             dependencies: ["SHTTP"]
         ),
+        
+        .testTarget(
+            name: "SHTTPTest",
+            dependencies: [
+                "SHTTP"
+            ],
+            path: "Tests"
+        )
     ]
 )
