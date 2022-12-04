@@ -71,7 +71,6 @@ class UserController: RequestController, MappingProtocol {
     var get: String
 }
 
-
 class NewsXController: RequestController, MappingProtocol {
     
     let mapping: String = "/news/x"
