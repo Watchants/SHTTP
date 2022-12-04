@@ -32,7 +32,7 @@ final class PipelineResponseHandler: ChannelOutboundHandler, RemovableChannelHan
                 context.close(promise: nil)
             }
         }
-        puts(code: head.status.code, method: message.request.head.method.rawValue, uri: message.request.head.uri, from: context.remoteAddress)
+        puts(message: message, from: context.remoteAddress)
     }
     
     private func write(context: ChannelHandlerContext, head: HTTPResponseHead, body: MessageBody, response: MessageResponse) -> EventLoopFuture<Void> {
@@ -106,7 +106,7 @@ extension PipelineResponseHandler {
  
     private static let debugDateFormatter = { () -> DateFormatter in
         let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .long
+        dateFormatter.dateStyle = .short
         dateFormatter.timeStyle = .medium
         dateFormatter.locale = Locale.current
         return dateFormatter
@@ -115,14 +115,19 @@ extension PipelineResponseHandler {
     private static var debugDate: String {
         debugDateFormatter.string(from: Date())
     }
-    
-    private var debugDate: String {
-        return PipelineResponseHandler.debugDate
-    }
 
-    private func puts(code: UInt, method: String, uri: String, from: SocketAddress?) {
-        let ip = from?.ipAddress ?? "-"
-        let port = from?.port ?? 0
-        print("[\(ip):\(port)] [\(debugDate)] [\(method)] [\(code)] \(uri)")
+    private func puts(message: Message, from: SocketAddress?) {
+        let date = Self.debugDateFormatter.string(from: Date())
+        let method = message.request.head.method.rawValue
+        let code = message.response.head.status.code
+        let path = message.request.head.uri
+        
+        if let ip = message.request.head.headers.first(name: "X-Real-IP") {
+            print("\(date) [x-real-ip:\(ip)] [\(method)] [\(code)] \(path)")
+        } else if let referer = message.request.head.headers.first(name: "Referer") {
+            print("\(date) [referer:\(referer)] [\(method)] [\(code)] \(path)")
+        } else {
+            print("\(date) [ip:\(from?.ipAddress ?? "-")] [\(method)] [\(code)] \(path)")
+        }
     }
 }
