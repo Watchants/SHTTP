@@ -106,9 +106,8 @@ extension PipelineResponseHandler {
  
     private static let debugDateFormatter = { () -> DateFormatter in
         let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .short
-        dateFormatter.timeStyle = .medium
         dateFormatter.locale = Locale.current
+        dateFormatter.dateFormat = "MM/dd/yy,HH:mm:ss"
         return dateFormatter
     }()
 
@@ -123,9 +122,9 @@ extension PipelineResponseHandler {
         let path = message.request.head.uri
         
         if let ip = message.request.head.headers.first(name: "X-Real-IP") {
-            print("\(date) [x-real-ip:\(ip)] [\(method)] [\(code)] \(path)")
+            print("\(date) > [\(method)][\(code)] from: [x-real-ip:\(ip)] `\(path)`")
         } else {
-            print("\(date) [ip:\(from?.ipAddress ?? "-")] [\(method)] [\(code)] \(path)")
+            print("\(date) > [\(method)][\(code)] from: [ip:\(from?.ipAddress ?? "-")] `\(path)`")
         }
     }
 }
