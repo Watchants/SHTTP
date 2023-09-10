@@ -60,13 +60,24 @@ public struct MessageResponse {
     public let head: HTTPResponseHead
     public let body: MessageBody
     
-    public init(head: HTTPResponseHead, stream: MessageByteStream) {
+    public init(head: HTTPResponseHead = .ok, stream: MessageByteStream) {
         self.head = head
         self.body = MessageBody(stream: stream)
     }
     
-    public init(head: HTTPResponseHead, body: MessageBody = MessageBody()) {
+    public init(head: HTTPResponseHead = .ok, body: MessageBody = MessageBody()) {
         self.head = head
         self.body = body
+    }
+}
+
+extension HTTPResponseHead {
+    
+    public static var ok: HTTPResponseHead {
+        .init(version: .init(major: 2, minor: 0), status: .ok)
+    }
+    
+    public static var notFound: HTTPResponseHead {
+        .init(version: .init(major: 2, minor: 0), status: .notFound)
     }
 }

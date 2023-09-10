@@ -14,7 +14,7 @@ class NewsController: RequestController, MappingProtocol {
     
     @RequestMapping("/c", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -22,7 +22,7 @@ class NewsController: RequestController, MappingProtocol {
     
     @RequestMapping("/b", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -30,7 +30,7 @@ class NewsController: RequestController, MappingProtocol {
     
     @RequestMapping("/{query}", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -43,7 +43,7 @@ class GettingController: RequestController, MappingProtocol {
     
     @RequestMapping("/a", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -51,7 +51,7 @@ class GettingController: RequestController, MappingProtocol {
     
     @RequestMapping("/b", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -64,7 +64,7 @@ class UserController: RequestController, MappingProtocol {
     
     @RequestMapping("/", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -72,7 +72,7 @@ class UserController: RequestController, MappingProtocol {
     
     @RequestMapping("/get", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })

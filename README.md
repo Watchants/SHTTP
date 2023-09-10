@@ -38,7 +38,7 @@ class GettingController: RequestController, MappingProtocol {
     
     @RequestMapping("", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -51,7 +51,7 @@ class UserController: RequestController, MappingProtocol {
     
     @RequestMapping("/info", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: [
+        let response = MessageResponse(head: .ok, body: .init(json: [
             "name": "tom",
             "age": 20,
         ]))
@@ -62,7 +62,7 @@ class UserController: RequestController, MappingProtocol {
     
     @RequestMapping("/update", method: [.POST], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        let response = MessageResponse(head: .ok, body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
@@ -70,7 +70,7 @@ class UserController: RequestController, MappingProtocol {
     
     @RequestMapping("/{id}", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: [
+        let response = MessageResponse(head: .ok, body: .init(json: [
             "name": "tom",
             "age": 20,
         ]))
