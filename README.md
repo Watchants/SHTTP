@@ -67,6 +67,17 @@ class UserController: RequestController, MappingProtocol {
         return promise.futureResult
     })
     var update: String
+    
+    @RequestMapping("/{id}", { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: [
+            "name": "tom",
+            "age": 20,
+        ]))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var info: String
 }
 
 ```
