@@ -120,9 +120,12 @@ extension RequestMapping {
     
     public final class Token {
         
+        public let uuid: UUID
+        
         public let queryItems: [Substring: [String]]
 
         public init(_ queryItems: [Substring : [String]] = [:]) {
+            self.uuid = .init()
             self.queryItems = queryItems
         }
     }
