@@ -12,7 +12,7 @@ class NewsController: RequestController, MappingProtocol {
     
     let mapping: String = "/news"
     
-    @RequestMapping("/c", { request, channel in
+    @RequestMapping("/c", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
@@ -20,20 +20,28 @@ class NewsController: RequestController, MappingProtocol {
     })
     var c: String
     
-    @RequestMapping("/b", method: [.GET], { request, channel in
+    @RequestMapping("/b", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
         return promise.futureResult
     })
     var b: String
+    
+    @RequestMapping("/{query}", method: [.GET], { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var query: String
 }
 
 class GettingController: RequestController, MappingProtocol {
     
     let mapping: String = "/get"
     
-    @RequestMapping("/a", { request, channel in
+    @RequestMapping("/a", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
@@ -41,7 +49,7 @@ class GettingController: RequestController, MappingProtocol {
     })
     var a: String
     
-    @RequestMapping("/b", method: [.GET], { request, channel in
+    @RequestMapping("/b", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
@@ -54,7 +62,7 @@ class UserController: RequestController, MappingProtocol {
     
     let mapping: String = "/user"
     
-    @RequestMapping("/", { request, channel in
+    @RequestMapping("/", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
@@ -62,7 +70,7 @@ class UserController: RequestController, MappingProtocol {
     })
     var request: String
     
-    @RequestMapping("/get", method: [.GET], { request, channel in
+    @RequestMapping("/get", method: [.GET], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
@@ -92,7 +100,7 @@ class GetExample: RequestController, MappingProtocol {
     
     let mapping: String = "/get"
     
-    @RequestMapping("/", { request, channel in
+    @RequestMapping("/", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let head = HTTPResponseHead(version: .init(major: 2, minor: 0), status: .ok)
         let body = MessageBody(json: [
@@ -111,7 +119,7 @@ class PostExample: RequestController, MappingProtocol {
     
     let mapping: String = "/post"
     
-    @RequestMapping("/request", { request, channel in
+    @RequestMapping("/request", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let head = HTTPResponseHead(version: .init(major: 2, minor: 0), status: .ok)
         let body = MessageBody(json: [
@@ -130,7 +138,7 @@ class FileExample: RequestController, MappingProtocol {
     
     let mapping: String = "/download/file"
     
-    @RequestMapping("/", { request, channel in
+    @RequestMapping("/", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         var head = HTTPResponseHead(version: .init(major: 2, minor: 0), status: .ok)
         head.headers.add(name: "Content-Type", value: "applicatioon/json")

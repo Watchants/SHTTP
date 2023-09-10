@@ -36,7 +36,7 @@ class GettingController: RequestController, MappingProtocol {
     
     let mapping: String = "/get"
     
-    @RequestMapping("", { request, channel in
+    @RequestMapping("", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)
@@ -49,7 +49,7 @@ class UserController: RequestController, MappingProtocol {
     
     let mapping: String = "/user"
     
-    @RequestMapping("/info", { request, channel in
+    @RequestMapping("/info", { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: [
             "name": "tom",
@@ -60,7 +60,7 @@ class UserController: RequestController, MappingProtocol {
     })
     var info: String
     
-    @RequestMapping("/update", method: [.POST], { request, channel in
+    @RequestMapping("/update", method: [.POST], { request, channel, token in
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: []))
         promise.succeed(response)

@@ -11,17 +11,34 @@ final class HandlerMapping {
     
     let directPathnameMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
     
+    let mappings: [RequestMapping.Element]
+    
+    let requestQueryMappings: [RequestMapping.Element]
+    
     init() {
         directPathnameMappings = Self.mappings
+        mappings = directPathnameMappings.values.flatMap { $0 }
+        requestQueryMappings = mappings.filter {
+            $0.pathname.response($0.pathname) != nil
+        }
     }
     
-    func lookupHandlerMethod(request: MessageRequest) -> RequestMapping.Handler {
-        let pathname: RequestMapping.Pathname = .init(path: request.uri.path)
+    func lookupHandlerMethod(request: MessageRequest) -> (handler: RequestMapping.Handler, token: RequestMapping.Token) {
+        let pathname = RequestMapping.Pathname(path: request.uri.path)
         if let mapping = directPathnameMappings[pathname]?.first {
-            return mapping.handler
+            return (mapping.handler, .init())
         }
-        return InternalRequestController.respond(from:on:)
+        for mapping in requestQueryMappings {
+            if let query = mapping.pathname.response(pathname) {
+                return (mapping.handler, query)
+            }
+        }
+        return (InternalRequestController.respond(from:on:token:), .init())
     }
+}
+
+extension HandlerMapping {
+    
 }
 
 extension HandlerMapping {
@@ -99,6 +116,49 @@ extension RequestMapping {
         let mapping: RequestMapping
         
         let handler: RequestMapping.Handler
+    }
+    
+    public final class Token {
+        
+        public let queryItems: [Substring: [String]]
+
+        public init(_ queryItems: [Substring : [String]] = [:]) {
+            self.queryItems = queryItems
+        }
+    }
+    
+}
+
+extension RequestMapping.Pathname {
+    
+    func response(_ request: RequestMapping.Pathname) -> RequestMapping.Token? {
+        
+        guard request.elements.count == elements.count else {
+            return nil
+        }
+        
+        var items: [Substring: [String]] = [:]
+        
+        for index in 0..<elements.count {
+            let item = elements[index]
+            let value = request.elements[index]
+            if let upper = item.range(of: "{")?.upperBound,
+               let lower = item.range(of: "}", options: .backwards)?.lowerBound,
+                upper < lower {
+                let key = item[upper..<lower]
+                var values = items[key] ?? []
+                values.append(value)
+                items[key] = values
+            } else if item != value {
+                return nil
+            }
+        }
+        
+        if (items.isEmpty) {
+            return nil
+        } else {
+            return .init(items)
+        }
     }
 }
 

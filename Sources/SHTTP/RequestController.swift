@@ -26,7 +26,7 @@ public protocol MappingProtocol {
 @propertyWrapper
 public struct RequestMapping {
     
-    public typealias Handler = (_ request: MessageRequest, _ channel: Channel) -> EventLoopFuture<MessageResponse>
+    public typealias Handler = (_ request: MessageRequest, _ channel: Channel, _ token: Token) -> EventLoopFuture<MessageResponse>
     
     public let path: String
     
@@ -70,7 +70,7 @@ final class InternalRequestController {
     </html>
     """
     
-    static func respond(from request: MessageRequest, on channel: Channel) -> EventLoopFuture<MessageResponse> {
+    static func respond(from request: MessageRequest, on channel: Channel, token: RequestMapping.Token) -> EventLoopFuture<MessageResponse> {
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
         let response = MessageResponse(head: .init(version: .init(major: 2, minor: 0), status: .ok), body: .init(json: messageBody404Json))
         promise.succeed(response)
