@@ -72,7 +72,7 @@ final class InternalRequestController {
     
     static func respond(from request: MessageRequest, on channel: Channel, token: RequestMapping.Token) -> EventLoopFuture<MessageResponse> {
         let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
-        let response = MessageResponse(head: .ok, body: .init(json: messageBody404Json))
+        let response = MessageResponse(head: .notFound, body: .init(json: messageBody404Json))
         promise.succeed(response)
         return promise.futureResult
     }

@@ -41,7 +41,6 @@ final class HandlerMapping {
                 return (mapping.handler, query)
             }
         }
-        
         while true {
             if let mapping = wildcardMappings[pathname]?.first {
                 return (mapping.handler, .init())
@@ -52,7 +51,6 @@ final class HandlerMapping {
                 pathname = pathname.dropLast()
             }
         }
-        
         return (InternalRequestController.respond(from:on:token:), .init())
     }
 }
