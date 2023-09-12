@@ -23,11 +23,16 @@ final class HandlerMapping {
         queryMappings = mappings.filter {
             $0.pathname.response($0.pathname) != nil
         }
-        wildcardMappings = [:]
+        wildcardMappings = mappings.filter(\.pathname.wildcard).reduce(into: [RequestMapping.Pathname: [RequestMapping.Element]]()) { partial, mapping in
+            let pathname = mapping.pathname.dropLast()
+            var mappings = partial[pathname] ?? []
+            mappings.append(mapping)
+            partial[pathname] = mappings
+        }
     }
     
     func lookupHandlerMethod(request: MessageRequest) -> (handler: RequestMapping.Handler, token: RequestMapping.Token) {
-        let pathname = RequestMapping.Pathname(path: request.uri.path)
+        var pathname = RequestMapping.Pathname(path: request.uri.path)
         if let mapping = directPathnameMappings[pathname]?.first {
             return (mapping.handler, .init())
         }
@@ -36,6 +41,18 @@ final class HandlerMapping {
                 return (mapping.handler, query)
             }
         }
+        
+        while true {
+            if let mapping = wildcardMappings[pathname]?.first {
+                return (mapping.handler, .init())
+            }
+            if pathname.isEmpty {
+                break
+            } else {
+                pathname = pathname.dropLast()
+            }
+        }
+        
         return (InternalRequestController.respond(from:on:token:), .init())
     }
 }
@@ -137,6 +154,21 @@ extension RequestMapping {
 
 extension RequestMapping.Pathname {
     
+    @inlinable var wildcard: Bool {
+        elements.last == "*"
+    }
+    
+    @inlinable var isEmpty: Bool {
+        elements.isEmpty
+    }
+    
+    @inlinable func dropLast(_ k: Int = 1) -> RequestMapping.Pathname {
+        return RequestMapping.Pathname(elements: elements.dropLast(k))
+    }
+}
+
+extension RequestMapping.Pathname {
+    
     func response(_ request: RequestMapping.Pathname) -> RequestMapping.Token? {
         
         guard request.elements.count == elements.count else {
@@ -193,6 +225,11 @@ extension RequestMapping.Pathname {
     init(lhs: Self, rhs: Self) {
         elements = lhs.elements + rhs.elements
         directPath = "/" + elements.joined(separator: "/")
+    }
+    
+    init(elements: [String]) {
+        self.elements = elements
+        self.directPath = "/" + elements.joined(separator: "/")
     }
 }
 

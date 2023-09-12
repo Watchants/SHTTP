@@ -8,6 +8,20 @@
 import SHTTP
 import Foundation
 
+
+class IndexController: RequestController, MappingProtocol {
+    
+    let mapping: String = "/"
+    
+    @RequestMapping("/*", { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .ok, body: .init(json: []))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var index: String
+}
+
 class NewsController: RequestController, MappingProtocol {
     
     let mapping: String = "/news"
@@ -77,6 +91,14 @@ class UserController: RequestController, MappingProtocol {
         return promise.futureResult
     })
     var get: String
+    
+    @RequestMapping("/get/value/*", method: [.GET], { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .ok, body: .init(json: []))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var value: String
 }
 
 class NewsXController: RequestController, MappingProtocol {
