@@ -147,7 +147,7 @@ extension RequestMapping.Pathname {
         
         for index in 0..<elements.count {
             let item = elements[index]
-            let value = request.elements[index]
+            let value = request.elements[index].lowercased()
             if item.first == "{" && item.last == "}" {
                 let upper = item.index(after: item.startIndex)
                 let lower = item.index(before: item.endIndex)
@@ -159,7 +159,7 @@ extension RequestMapping.Pathname {
                     continue
                 }
             }
-            if item != value {
+            if item.lowercased() != value.lowercased() {
                 return nil
             }
         }
@@ -210,7 +210,7 @@ extension RequestMapping.Pathname {
 extension RequestMapping.Pathname: Comparable, Hashable {
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.directPath == rhs.directPath
+        lhs.directPath.lowercased() == rhs.directPath.lowercased()
     }
     
     static func < (lhs: RequestMapping.Pathname, rhs: RequestMapping.Pathname) -> Bool {
@@ -222,6 +222,6 @@ extension RequestMapping.Pathname: Comparable, Hashable {
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(directPath)
+        hasher.combine(directPath.lowercased())
     }
 }
