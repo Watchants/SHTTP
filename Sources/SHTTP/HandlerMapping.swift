@@ -11,16 +11,19 @@ final class HandlerMapping {
     
     let directPathnameMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
     
+    let wildcardMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
+    
     let mappings: [RequestMapping.Element]
     
-    let requestQueryMappings: [RequestMapping.Element]
+    let queryMappings: [RequestMapping.Element]
     
     init() {
         directPathnameMappings = Self.mappings
         mappings = directPathnameMappings.values.flatMap { $0 }
-        requestQueryMappings = mappings.filter {
+        queryMappings = mappings.filter {
             $0.pathname.response($0.pathname) != nil
         }
+        wildcardMappings = [:]
     }
     
     func lookupHandlerMethod(request: MessageRequest) -> (handler: RequestMapping.Handler, token: RequestMapping.Token) {
@@ -28,7 +31,7 @@ final class HandlerMapping {
         if let mapping = directPathnameMappings[pathname]?.first {
             return (mapping.handler, .init())
         }
-        for mapping in requestQueryMappings {
+        for mapping in queryMappings {
             if let query = mapping.pathname.response(pathname) {
                 return (mapping.handler, query)
             }
@@ -145,14 +148,18 @@ extension RequestMapping.Pathname {
         for index in 0..<elements.count {
             let item = elements[index]
             let value = request.elements[index]
-            if let upper = item.range(of: "{")?.upperBound,
-               let lower = item.range(of: "}", options: .backwards)?.lowerBound,
-                upper < lower {
-                let key = item[upper..<lower]
-                var values = items[key] ?? []
-                values.append(value)
-                items[key] = values
-            } else if item != value {
+            if item.first == "{" && item.last == "}" {
+                let upper = item.index(after: item.startIndex)
+                let lower = item.index(before: item.endIndex)
+                if upper < lower {
+                    let key = item[upper..<lower]
+                    var values = items[key] ?? []
+                    values.append(value)
+                    items[key] = values
+                    continue
+                }
+            }
+            if item != value {
                 return nil
             }
         }
