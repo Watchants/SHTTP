@@ -179,7 +179,7 @@ extension RequestMapping.Pathname {
         
         for index in 0..<elements.count {
             let item = elements[index]
-            let value = request.elements[index].lowercased()
+            let value = request.elements[index]
             if item.first == "{" && item.last == "}" {
                 let upper = item.index(after: item.startIndex)
                 let lower = item.index(before: item.endIndex)
