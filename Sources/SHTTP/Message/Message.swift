@@ -71,6 +71,13 @@ public struct MessageResponse {
     }
 }
 
+extension MessageResponse {
+    
+    public static func body(_ body: MessageBody) -> MessageResponse {
+        return .init(body: body)
+    }
+}
+
 extension HTTPResponseHead {
     
     public static var ok: HTTPResponseHead {

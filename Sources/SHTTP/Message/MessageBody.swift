@@ -9,7 +9,7 @@ import Foundation
 
 public struct MessageBody {
 
-public let storage: MessageBody.Storage
+    public let storage: MessageBody.Storage
 
     public init() {
         storage = .empty
@@ -33,6 +33,29 @@ public let storage: MessageBody.Storage
 
     public init(stream: MessageByteStream) {
         storage = .stream(stream)
+    }
+}
+
+extension MessageBody {
+    
+    public static func buffer(_ buffer: ByteBuffer) -> MessageBody {
+        return .init(buffer: buffer)
+    }
+
+    public static func data(_ data: Data) -> MessageBody {
+        return .init(data: data)
+    }
+
+    public static func string(_ string: String) -> MessageBody {
+        return .init(string: string)
+    }
+
+    public static func json(_ json: Any) -> MessageBody {
+        return .init(json: json)
+    }
+
+    public static func stream(_ stream: MessageByteStream) -> MessageBody {
+        return .init(stream: stream)
     }
 }
 
