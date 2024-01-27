@@ -9,21 +9,33 @@ import Foundation
 
 final class HandlerMapping {
     
-    let directPathnameMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
+    private var directPathnameMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
     
-    let wildcardMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
+    private var queryMappings: [RequestMapping.Element]
     
-    let mappings: [RequestMapping.Element]
+    private var wildcardMappings: [RequestMapping.Pathname: [RequestMapping.Element]]
     
-    let queryMappings: [RequestMapping.Element]
+    private let registeSemaphore: DispatchSemaphore?
     
-    init() {
-        directPathnameMappings = Self.mappings
-        mappings = directPathnameMappings.values.flatMap { $0 }
-        queryMappings = mappings.filter {
+    /// Create HandlerMapping
+    /// - Parameter initialization: auto install from `objc_copyClassList`
+    init(initialization: Bool = true, registrable: Bool = false) {
+        if initialization {
+            directPathnameMappings = Self.mappingsByPathname(mappings: Self.copyMappingsFromClassList)
+        } else {
+            directPathnameMappings = [:]
+        }
+        if registrable {
+            registeSemaphore = .init(value: 1)
+        } else {
+            registeSemaphore = nil
+        }
+        
+        let elements = directPathnameMappings.values.flatMap { $0 }
+        queryMappings = elements.filter {
             $0.pathname.response($0.pathname) != nil
         }
-        wildcardMappings = mappings.filter(\.pathname.wildcard).reduce(into: [RequestMapping.Pathname: [RequestMapping.Element]]()) { partial, mapping in
+        wildcardMappings = elements.filter(\.pathname.wildcard).reduce(into: [RequestMapping.Pathname: [RequestMapping.Element]]()) { partial, mapping in
             let pathname = mapping.pathname.dropLast()
             var mappings = partial[pathname] ?? []
             mappings.append(mapping)
@@ -31,7 +43,51 @@ final class HandlerMapping {
         }
     }
     
+    func register(mappings: [MappingProtocol]) {
+        guard let registeSemaphore = registeSemaphore else {
+            return
+        }
+        registeSemaphore.wait()
+        defer {
+            registeSemaphore.signal()
+        }
+        
+        let directPathnameMappings = Self.mappingsByPathname(mappings: mappings)
+        for element in directPathnameMappings {
+            if let elements = self.directPathnameMappings[element.key] {
+                self.directPathnameMappings[element.key] = element.value + elements
+            } else {
+                self.directPathnameMappings[element.key] = element.value
+            }
+        }
+        
+        let elements = directPathnameMappings.values.flatMap { $0 }
+        let queryMappings = elements.filter {
+            $0.pathname.response($0.pathname) != nil
+        }
+        self.queryMappings.append(contentsOf: queryMappings)
+        
+        let wildcardMappings = elements.filter(\.pathname.wildcard).reduce(into: [RequestMapping.Pathname: [RequestMapping.Element]]()) { partial, mapping in
+            let pathname = mapping.pathname.dropLast()
+            var mappings = partial[pathname] ?? []
+            mappings.append(mapping)
+            partial[pathname] = mappings
+        }
+        for element in wildcardMappings {
+            if let elements = self.wildcardMappings[element.key] {
+                self.wildcardMappings[element.key] = element.value + elements
+            } else {
+                self.wildcardMappings[element.key] = element.value
+            }
+        }
+    }
+    
     func lookupHandlerMethod(request: MessageRequest) -> (handler: RequestMapping.Handler, token: RequestMapping.Token) {
+        registeSemaphore?.wait()
+        defer {
+            registeSemaphore?.signal()
+        }
+        
         var pathname = RequestMapping.Pathname(path: request.uri.path)
         if let mapping = directPathnameMappings[pathname]?.first {
             return (mapping.handler, .init())
@@ -57,12 +113,8 @@ final class HandlerMapping {
 
 extension HandlerMapping {
     
-}
-
-extension HandlerMapping {
-    
-    private static var mappings: [RequestMapping.Pathname: [RequestMapping.Element]] {
-        controllers.map {
+    private static func mappingsByPathname(mappings: [MappingProtocol]) -> [RequestMapping.Pathname: [RequestMapping.Element]] {
+        mappings.map {
             (pathname: RequestMapping.Pathname(path: $0.mapping), controller: $0)
         }.sorted {
             $0.pathname > $1.pathname
@@ -80,7 +132,7 @@ extension HandlerMapping {
         }
     }
     
-    private static var controllers: [MappingProtocol] {
+    private static var copyMappingsFromClassList: [MappingProtocol] {
         var count: UInt32 = 0
         guard let pointer = objc_copyClassList(&count) else {
             return []

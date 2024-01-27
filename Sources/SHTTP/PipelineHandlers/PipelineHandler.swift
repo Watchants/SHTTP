@@ -19,7 +19,7 @@ final class HandlePipeline: ChannelInboundHandler {
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let wrap = wrapOutboundOut
         let request = unwrapInboundIn(data)
-        let result = bootstrap.mapping.lookupHandlerMethod(request: request)
+        let result = bootstrap.handler.lookupHandlerMethod(request: request)
         result.handler(request, context.channel, result.token).whenComplete { result in
             switch result {
             case .success(let response):
