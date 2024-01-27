@@ -44,12 +44,9 @@ final class HandlerMapping {
     }
     
     func register(mappings: [MappingProtocol]) {
-        guard let registeSemaphore = registeSemaphore else {
-            return
-        }
-        registeSemaphore.wait()
+        registeSemaphore?.wait()
         defer {
-            registeSemaphore.signal()
+            registeSemaphore?.signal()
         }
         
         let directPathnameMappings = Self.mappingsByPathname(mappings: mappings)

@@ -8,7 +8,6 @@
 import SHTTP
 import Foundation
 
-
 class IndexController: RequestController, MappingProtocol {
     
     let mapping: String = "/"
@@ -188,3 +187,31 @@ class FileExample: RequestController, MappingProtocol {
     var request: String
 }
 
+class AddingsController: RequestController, MappingProtocol {
+    
+    let mapping: String = "/addings"
+    
+    @RequestMapping("/*", { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .ok, body: .init(json: []))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var request: String
+    
+    @RequestMapping("/get", method: [.GET], { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .ok, body: .init(json: []))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var get: String
+    
+    @RequestMapping("/get/value/*", method: [.GET], { request, channel, token in
+        let promise = channel.eventLoop.makePromise(of: MessageResponse.self)
+        let response = MessageResponse(head: .ok, body: .init(json: []))
+        promise.succeed(response)
+        return promise.futureResult
+    })
+    var value: String
+}

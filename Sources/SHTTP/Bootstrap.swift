@@ -74,6 +74,15 @@ public final class Bootstrap {
 
 extension Bootstrap {
     
+    public func register(mappings: MappingProtocol...) {
+        if configuration.handler.registrable {
+            handler.register(mappings: mappings)
+        }
+    }
+}
+
+extension Bootstrap {
+    
     public struct Configuration {
         
         public struct HandlerMappingConfiguration {
