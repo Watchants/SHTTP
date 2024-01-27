@@ -17,10 +17,10 @@ public final class Bootstrap {
     
     internal let handler: HandlerMapping
     
-    public init(initialization: Bool = true, registrable: Bool = false, configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
+    public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
-        self.handler = .init(initialization: initialization, registrable: registrable)
+        self.handler = .init(configuration: configuration.handler)
     }
     
     deinit { try? eventLoopGroup.syncShutdownGracefully() }
@@ -76,12 +76,24 @@ extension Bootstrap {
     
     public struct Configuration {
         
+        public struct HandlerMappingConfiguration {
+            
+            public let initialization: Bool
+            public let registrable: Bool
+            
+            public init(initialization: Bool = true, registrable: Bool = false) {
+                self.initialization = initialization
+                self.registrable = registrable
+            }
+        }
+        
         public var host: String
         public var port: Int
         public var backlog: Int32
         public var reuseAddr: Bool
         public var tcpNoDelay: Bool
         public var allowHalfClosure: Bool
+        public var handler: HandlerMappingConfiguration
         public var logger: String
         
         public init(host: String = "localhost",
@@ -90,6 +102,7 @@ extension Bootstrap {
                     reuseAddr: Bool = true,
                     tcpNoDelay: Bool = true,
                     allowHalfClosure: Bool = false,
+                    handler: HandlerMappingConfiguration = .init(),
                     logger: String = "/dev/null/") {
             
             self.host = host
@@ -98,6 +111,7 @@ extension Bootstrap {
             self.reuseAddr = reuseAddr
             self.tcpNoDelay = tcpNoDelay
             self.allowHalfClosure = allowHalfClosure
+            self.handler = handler
             self.logger = logger
         }
     }

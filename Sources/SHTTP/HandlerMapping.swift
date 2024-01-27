@@ -18,14 +18,14 @@ final class HandlerMapping {
     private let registeSemaphore: DispatchSemaphore?
     
     /// Create HandlerMapping
-    /// - Parameter initialization: auto install from `objc_copyClassList`
-    init(initialization: Bool = true, registrable: Bool = false) {
-        if initialization {
+    /// - Parameter configuration: init Configuration
+    init(configuration: Bootstrap.Configuration.HandlerMappingConfiguration) {
+        if configuration.initialization {
             directPathnameMappings = Self.mappingsByPathname(mappings: Self.copyMappingsFromClassList)
         } else {
             directPathnameMappings = [:]
         }
-        if registrable {
+        if configuration.registrable {
             registeSemaphore = .init(value: 1)
         } else {
             registeSemaphore = nil
