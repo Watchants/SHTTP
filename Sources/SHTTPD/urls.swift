@@ -8,7 +8,7 @@
 import SHTTP
 import Foundation
 
-class IndexController: RequestController, MappingProtocol {
+class IndexController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/"
     
@@ -21,7 +21,7 @@ class IndexController: RequestController, MappingProtocol {
     var index: String
 }
 
-class NewsController: RequestController, MappingProtocol {
+class NewsController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/news"
     
@@ -50,7 +50,7 @@ class NewsController: RequestController, MappingProtocol {
     var query: String
 }
 
-class GettingController: RequestController, MappingProtocol {
+class GettingController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/get"
     
@@ -71,7 +71,7 @@ class GettingController: RequestController, MappingProtocol {
     var b: String
 }
 
-class UserController: RequestController, MappingProtocol {
+class UserController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/user"
     
@@ -100,24 +100,24 @@ class UserController: RequestController, MappingProtocol {
     var value: String
 }
 
-class NewsXController: RequestController, MappingProtocol {
+class NewsXController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/news/x"
     
 }
 
-class GettingXController: RequestController, MappingProtocol {
+class GettingXController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/get/x"
     
 }
 
-class UserXController: RequestController, MappingProtocol {
+class UserXController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/user/x"
 }
 
-class GetExample: RequestController, MappingProtocol {
+class GetExample: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/get"
     
@@ -136,7 +136,7 @@ class GetExample: RequestController, MappingProtocol {
     var request: String
 }
 
-class PostExample: RequestController, MappingProtocol {
+class PostExample: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/post"
     
@@ -155,7 +155,7 @@ class PostExample: RequestController, MappingProtocol {
     var request: String
 }
 
-class FileExample: RequestController, MappingProtocol {
+class FileExample: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/download/file"
     
@@ -187,7 +187,7 @@ class FileExample: RequestController, MappingProtocol {
     var request: String
 }
 
-class AddingsController: RequestController, MappingProtocol {
+class AddingsController: RequestController, RequestControllerProtocol {
     
     let mapping: String = "/addings"
     

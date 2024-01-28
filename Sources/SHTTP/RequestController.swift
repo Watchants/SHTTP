@@ -16,7 +16,7 @@ open class RequestController {
     }
 }
 
-public protocol MappingProtocol {
+public protocol RequestControllerProtocol {
     
     init()
     

@@ -21,7 +21,7 @@ final class HandlerMapping {
     /// - Parameter configuration: init Configuration
     init(configuration: Bootstrap.Configuration.HandlerMappingConfiguration) {
         if configuration.initialization {
-            directPathnameMappings = Self.mappingsByPathname(mappings: Self.copyMappingsFromClassList)
+            directPathnameMappings = Self.controllersByPathname(controllers: Self.copyControllersFromClassList)
         } else {
             directPathnameMappings = [:]
         }
@@ -43,13 +43,17 @@ final class HandlerMapping {
         }
     }
     
-    func register(mappings: [MappingProtocol]) {
+    func register(controllers: [RequestControllerProtocol.Type]) {
         registeSemaphore?.wait()
         defer {
             registeSemaphore?.signal()
         }
         
-        let directPathnameMappings = Self.mappingsByPathname(mappings: mappings)
+        let controllers = controllers.map {
+            $0.init()
+        }
+        
+        let directPathnameMappings = Self.controllersByPathname(controllers: controllers)
         for element in directPathnameMappings {
             if let elements = self.directPathnameMappings[element.key] {
                 self.directPathnameMappings[element.key] = element.value + elements
@@ -110,8 +114,8 @@ final class HandlerMapping {
 
 extension HandlerMapping {
     
-    private static func mappingsByPathname(mappings: [MappingProtocol]) -> [RequestMapping.Pathname: [RequestMapping.Element]] {
-        mappings.map {
+    private static func controllersByPathname(controllers: [RequestControllerProtocol]) -> [RequestMapping.Pathname: [RequestMapping.Element]] {
+        controllers.map {
             (pathname: RequestMapping.Pathname(path: $0.mapping), controller: $0)
         }.sorted {
             $0.pathname > $1.pathname
@@ -129,7 +133,7 @@ extension HandlerMapping {
         }
     }
     
-    private static var copyMappingsFromClassList: [MappingProtocol] {
+    private static var copyControllersFromClassList: [RequestControllerProtocol] {
         var count: UInt32 = 0
         guard let pointer = objc_copyClassList(&count) else {
             return []
@@ -139,8 +143,8 @@ extension HandlerMapping {
         }
         
         let classes = UnsafeBufferPointer(start: pointer, count: Int(count))
-        return classes.map { `class` -> MappingProtocol? in
-            guard let controller = classIsRequestController(`class`) as? MappingProtocol.Type else {
+        return classes.map { `class` -> RequestControllerProtocol? in
+            guard let controller = classIsRequestController(`class`) as? RequestControllerProtocol.Type else {
                 return nil
             }
             return controller.init()
