@@ -64,7 +64,7 @@ public final class Bootstrap {
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)
             .childChannelOption(ChannelOptions.allowRemoteHalfClosure, value: configuration.allowHalfClosure)
      
-        let channelFuture = socketBootstrap.bind(host: configuration.host, port: configuration.port)
+        let channelFuture = socketBootstrap.bind(to: configuration.socketAddress)
         self.channelFuture = channelFuture
         return channelFuture
     }
@@ -94,26 +94,39 @@ extension Bootstrap {
             }
         }
         
-        public var host: String
-        public var port: Int
-        public var backlog: Int32
-        public var reuseAddr: Bool
-        public var tcpNoDelay: Bool
-        public var allowHalfClosure: Bool
-        public var handler: HandlerMappingConfiguration
-        public var logger: String
+        public let socketAddress: SocketAddress
+        public let backlog: Int32
+        public let reuseAddr: Bool
+        public let tcpNoDelay: Bool
+        public let allowHalfClosure: Bool
+        public let handler: HandlerMappingConfiguration
+        public let logger: String
         
-        public init(host: String = "localhost",
-                    port: Int = 8888,
+        public init(socketAddress: SocketAddress,
                     backlog: Int32 = 256,
                     reuseAddr: Bool = true,
                     tcpNoDelay: Bool = true,
                     allowHalfClosure: Bool = false,
                     handler: HandlerMappingConfiguration = .init(),
                     logger: String = "/dev/null/") {
-            
-            self.host = host
-            self.port = port
+            self.socketAddress = socketAddress
+            self.backlog = backlog
+            self.reuseAddr = reuseAddr
+            self.tcpNoDelay = tcpNoDelay
+            self.allowHalfClosure = allowHalfClosure
+            self.handler = handler
+            self.logger = logger
+        }
+        
+        public init(ipAddress: String = "localhost",
+                    port: Int = 8888,
+                    backlog: Int32 = 256,
+                    reuseAddr: Bool = true,
+                    tcpNoDelay: Bool = true,
+                    allowHalfClosure: Bool = false,
+                    handler: HandlerMappingConfiguration = .init(),
+                    logger: String = "/dev/null/") throws {
+            self.socketAddress = try .init(ipAddress: ipAddress, port: port)
             self.backlog = backlog
             self.reuseAddr = reuseAddr
             self.tcpNoDelay = tcpNoDelay

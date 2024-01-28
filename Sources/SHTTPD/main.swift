@@ -8,8 +8,8 @@
 import SHTTP
 
 let bootstrap = Bootstrap(
-    configuration: .init(
-        host: "127.0.0.1",
+    configuration: try .init(
+        ipAddress: "127.0.0.1",
         port: 8889,
         handler: .init(
             initialization: true,
