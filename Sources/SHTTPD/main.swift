@@ -19,7 +19,7 @@ let bootstrap = Bootstrap(
     eventLoopGroup: MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
 )
 
-bootstrap.register(AddingsController.self)
+bootstrap.register(AddingsController())
 
 let future = bootstrap.start()
 bootstrap.printAddress()

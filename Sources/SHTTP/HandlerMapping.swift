@@ -43,14 +43,10 @@ final class HandlerMapping {
         }
     }
     
-    func register(controllers: [RequestControllerProtocol.Type]) {
+    func register(controllers: [RequestControllerProtocol]) {
         registeSemaphore?.wait()
         defer {
             registeSemaphore?.signal()
-        }
-        
-        let controllers = controllers.map {
-            $0.init()
         }
         
         let directPathnameMappings = Self.controllersByPathname(controllers: controllers)

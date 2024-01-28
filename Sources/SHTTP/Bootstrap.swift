@@ -72,7 +72,7 @@ public final class Bootstrap {
 
 extension Bootstrap {
     
-    public func register(_ controllers: RequestControllerProtocol.Type...) {
+    public func register(_ controllers: RequestControllerProtocol...) {
         if configuration.handler.registrable {
             handlerMapping.register(controllers: controllers)
         }
