@@ -77,6 +77,12 @@ extension Bootstrap {
             handlerMapping.register(controllers: controllers)
         }
     }
+    
+    public func register(_ controllers: [RequestControllerProtocol]) {
+        if configuration.handler.registrable {
+            handlerMapping.register(controllers: controllers)
+        }
+    }
 }
 
 extension Bootstrap {
