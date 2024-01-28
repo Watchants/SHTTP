@@ -10,12 +10,13 @@ import NIOHTTP2
 
 public final class Bootstrap {
     
-    private var channel: Channel?
+    internal let handler: HandlerMapping
     
     public let configuration: Configuration
+    
     public let eventLoopGroup: EventLoopGroup
     
-    internal let handler: HandlerMapping
+    private var channelFuture: EventLoopFuture<Channel>?
     
     public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
         self.configuration = configuration
@@ -23,26 +24,30 @@ public final class Bootstrap {
         self.handler = .init(configuration: configuration.handler)
     }
     
-    deinit { try? eventLoopGroup.syncShutdownGracefully() }
+    deinit {
+        if let channel = try? channelFuture?.wait() {
+            channel.close(mode: .all, promise: nil)
+        }
+    }
     
     public var localAddress: SocketAddress? {
-        guard let channel = channel else {
+        guard let channel = try? channelFuture?.wait() else {
             fatalError("Called onClose before start()")
         }
         return channel.localAddress
     }
     
     public var onClose: EventLoopFuture<Void> {
-        guard let channel = channel else {
+        guard let channel = try? channelFuture?.wait() else {
             fatalError("Called onClose before start()")
         }
         return channel.closeFuture
     }
     
-    public func start() -> EventLoopFuture<Void> {
-        
-        let configuration = self.configuration
-        let eventLoopGroup = self.eventLoopGroup
+    public func start() -> EventLoopFuture<Channel> {
+        if let channel = try? channelFuture?.wait() {
+            channel.close(mode: .all, promise: nil)
+        }
         
         let socketBootstrap = ServerBootstrap(group: eventLoopGroup)
             // Specify backlog and enable SO_REUSEADDR for the server itself
@@ -66,9 +71,9 @@ public final class Bootstrap {
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)
             .childChannelOption(ChannelOptions.allowRemoteHalfClosure, value: configuration.allowHalfClosure)
      
-        return socketBootstrap.bind(host: configuration.host, port: configuration.port).map { channel in
-            self.channel = channel
-        }
+        let channelFuture = socketBootstrap.bind(host: configuration.host, port: configuration.port)
+        self.channelFuture = channelFuture
+        return channelFuture
     }
 }
 

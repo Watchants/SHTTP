@@ -12,8 +12,8 @@ let bootstrap = Bootstrap(
         host: "127.0.0.1",
         port: 8889,
         handler: .init(
-            initialization: false,
-            registrable: true
+            initialization: true,
+            registrable: false
         )
     ),
     eventLoopGroup: .init(numberOfThreads: System.coreCount)
