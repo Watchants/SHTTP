@@ -10,7 +10,7 @@ import NIOHTTP2
 
 public final class Bootstrap {
     
-    internal let handler: HandlerMapping
+    internal let handlerMapping: HandlerMapping
     
     public let configuration: Configuration
     
@@ -18,10 +18,10 @@ public final class Bootstrap {
     
     public private(set) var channelFuture: EventLoopFuture<Channel>?
     
-    public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
+    public init(configuration: Configuration, eventLoopGroup: EventLoopGroup) {
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
-        self.handler = .init(configuration: configuration.handler)
+        self.handlerMapping = .init(configuration: configuration.handler)
     }
     
     deinit {
@@ -74,7 +74,7 @@ extension Bootstrap {
     
     public func register(mappings: MappingProtocol...) {
         if configuration.handler.registrable {
-            handler.register(mappings: mappings)
+            handlerMapping.register(mappings: mappings)
         }
     }
 }

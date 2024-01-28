@@ -16,7 +16,7 @@ let bootstrap = Bootstrap(
             registrable: false
         )
     ),
-    eventLoopGroup: .init(numberOfThreads: System.coreCount)
+    eventLoopGroup: MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
 )
 
 bootstrap.register(mappings: AddingsController())
