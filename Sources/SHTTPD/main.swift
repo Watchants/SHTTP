@@ -21,6 +21,6 @@ let bootstrap = Bootstrap(
 
 bootstrap.register(mappings: AddingsController())
 
-try bootstrap.start().wait()
+let future = bootstrap.start()
 bootstrap.printAddress()
-try bootstrap.onClose.wait()
+try bootstrap.channelFuture?.wait().closeFuture.wait()

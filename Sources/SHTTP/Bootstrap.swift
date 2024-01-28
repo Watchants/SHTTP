@@ -16,7 +16,7 @@ public final class Bootstrap {
     
     public let eventLoopGroup: EventLoopGroup
     
-    private var channelFuture: EventLoopFuture<Channel>?
+    public private(set) var channelFuture: EventLoopFuture<Channel>?
     
     public init(configuration: Configuration, eventLoopGroup: MultiThreadedEventLoopGroup) {
         self.configuration = configuration
@@ -28,13 +28,6 @@ public final class Bootstrap {
         if let channel = try? channelFuture?.wait() {
             channel.close(mode: .all, promise: nil)
         }
-    }
-    
-    public var localAddress: SocketAddress? {
-        guard let channel = try? channelFuture?.wait() else {
-            fatalError("Called onClose before start()")
-        }
-        return channel.localAddress
     }
     
     public var onClose: EventLoopFuture<Void> {
@@ -134,29 +127,34 @@ extension Bootstrap {
 extension Bootstrap {
     
     public func printAddress() {
-        
-        guard let address = localAddress else {
-            print("Address was unable to bind. Please check that the socket was not closed or that the address family was understood.")
-            return
+        let configuration = configuration
+        channelFuture?.whenComplete { result in
+            switch result {
+            case .success(let channel):
+                if let address = channel.localAddress {
+                    let host: String
+                    let `protocol`: String
+                    switch address {
+                    case .v4(let ip):
+                        host = ip.host + (address.port.map { ":\($0)" } ?? "")
+                        `protocol` = "ipv4"
+                    case .v6(let ip):
+                        host = ip.host + (address.port.map { ":\($0)" } ?? "")
+                        `protocol` = "ipv6"
+                    default:
+                        host = "?"
+                        `protocol` = "?"
+                        print("unknown protocol\(address)")
+                    }
+                    print("Server started and listening on [\(`protocol`)] http://\(host), logger path \(configuration.logger)")
+                } else {
+                    print("Address was unable to bind. Please check that the socket was not closed or that the address family was understood.")
+                }
+            case .failure(let error):
+                print(error)
+                print("Address was unable to bind. Please check that the socket was not closed or that the address family was understood.")
+            }
         }
-
-        let host: String
-        let `protocol`: String
-        
-        switch address {
-        case .v4(let ip):
-            host = ip.host + (address.port.map { ":\($0)" } ?? "")
-            `protocol` = "ipv4"
-        case .v6(let ip):
-            host = ip.host + (address.port.map { ":\($0)" } ?? "")
-            `protocol` = "ipv6"
-        default:
-            host = "?"
-            `protocol` = "?"
-            print("unknown protocol\(address)")
-        }
-
-        print("Server started and listening on [\(`protocol`)] http://\(host), logger path \(configuration.logger)")
     }
 }
 
